@@ -45,17 +45,31 @@ void loop() {
       }
       break;
     case Moving:
-      if (M5.BtnC.wasPressed()) {
+      if (M5.BtnA.wasPressed()) {
+        M5.Lcd.fillRect(0, 0, 320, 180, TFT_WHITE);
+        mm++;
+      } else if (M5.BtnB.wasPressed()) {
+        initialize();
+      } else if (M5.BtnC.wasPressed()) {
         pauseTimer();
       }
       break;
     case Pause:
-      if (M5.BtnC.wasPressed()) {
-        endTimer();
+      if (M5.BtnA.wasPressed()) {
+        M5.Lcd.fillRect(0, 0, 320, 180, TFT_WHITE);
+        mm++;
+      } else if (M5.BtnB.wasPressed()) {
+        initialize();
+      } else if (M5.BtnC.wasPressed()) {
+        moveTimer();
       }
       break;
     case Ended:
-      if (M5.BtnC.wasPressed()) {
+      if (M5.BtnA.wasPressed()) {
+        initialize();
+      } else if (M5.BtnB.wasPressed()) {
+        initialize();
+      } else if (M5.BtnC.wasPressed()) {
         initialize();
       }
       break;
