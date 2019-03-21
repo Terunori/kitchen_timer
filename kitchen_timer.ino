@@ -40,7 +40,12 @@ void loop() {
         mm++;
       } else if (M5.BtnB.wasPressed()) {
         M5.Lcd.fillRect(0, 0, 320, 180, TFT_WHITE);
-        ss += 10;
+        if (ss < 50) {
+          ss += 10;
+        } else {
+          ss = 0;
+          mm++;
+        }
       } else if (M5.BtnC.wasPressed()) {
         if (!(mm == 0 && ss == 0)) {
           moveTimer();
@@ -77,7 +82,7 @@ void loop() {
       }
       break;
     case Ended:
-      if (M5.BtnA.wasPressed()) {      
+      if (M5.BtnA.wasPressed()) {
         initialize();
       } else if (M5.BtnB.wasPressed()) {
         initialize();
@@ -86,7 +91,7 @@ void loop() {
       } else if (blinkOn()) {
         M5.Speaker.mute();
       } else {
-        M5.Speaker.tone(1200,500);
+        M5.Speaker.tone(600, 500);
       }
       break;
   }
@@ -200,12 +205,12 @@ void setColon() {
 }
 
 void updateTime() {
-  int oss = ss;
+  int oldss = ss;
   long remainingTime = setTime - delayTime;
   if (!(M5.BtnB.isPressed())) {
     mm = remainingTime / 60000;
     ss = (remainingTime - mm * 60000) / 1000;
-    if (oss != ss) {
+    if (oldss != ss) {
       M5.Lcd.fillRect(0, 0, 320, 180, TFT_LIGHTGREY);
     }
   }
