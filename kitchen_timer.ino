@@ -5,6 +5,7 @@
 */
 
 #include <M5Stack.h>
+#include <driver/dac.h> //Arduino-ESP32 driver
 
 int mm = 0;
 int ss = 0;
@@ -12,6 +13,9 @@ int ss = 0;
 long baseTime;
 long delayTime;
 long setTime;
+
+int beep_total_time;
+int beep_last_time;
 
 enum Stats {
   Initialized,
@@ -24,6 +28,8 @@ enum Stats stats;
 
 void setup() {
   M5.begin();
+  //これを実行すると、M5Stackスピーカーから破裂音が出る
+  dac_output_enable( DAC_CHANNEL_1 ); //DAC channel 1 is GPIO #25
   M5.Lcd.setTextFont(2);
   M5.Lcd.fillScreen(TFT_WHITE);
   stats = Initialized;
@@ -85,17 +91,10 @@ void loop() {
       }
       break;
     case Ended:
-      if (M5.BtnA.wasPressed()) {
-        initialize();
-      } else if (M5.BtnB.wasPressed()) {
-        initialize();
-      } else if (M5.BtnC.wasPressed()) {
-        initialize();
-      } else if (blinkOn()) {
-        M5.Speaker.mute();
-      } else {
-        M5.Speaker.tone(600, 500);
+      while (!(M5.BtnA.read() || M5.BtnB.read() || M5.BtnC.read())) {
+        periodicBeep(5, 1400, 80, 4, 400);
       }
+      initialize();
       break;
   }
 }
@@ -164,6 +163,9 @@ void endTimer() {
   ss = 0;
   baseTime = millis();
 
+  beep_total_time = baseTime;
+  beep_last_time = baseTime;
+
   stats = Ended;
 }
 
@@ -216,6 +218,31 @@ void updateTime() {
     if (oldss != ss) {
       M5.Lcd.fillRect(0, 0, 320, 180, TFT_LIGHTGREY);
     }
+  }
+}
+
+void periodicBeep(uint8_t volume, int hz, int duration, int times, int interval) {
+  if ( millis() - beep_total_time < duration * times * 2 ) {
+    uint32_t b_period = millis() - beep_last_time;
+    int halfCycle = 500000 / hz;
+    if ( b_period < duration ) {
+      dac_output_voltage(DAC_CHANNEL_1, 0);
+      delayMicroseconds(halfCycle);
+      dac_output_voltage(DAC_CHANNEL_1, volume);
+      delayMicroseconds(halfCycle);
+    } else if ( b_period >= duration && b_period < duration * 2 ) {
+      dac_output_voltage(DAC_CHANNEL_1, 0);
+    } else {
+      beep_last_time = millis();
+    }
+  } else {
+    dac_output_disable(DAC_CHANNEL_1);
+    delay(interval/4);
+    delay(interval/4);
+    delay(interval/4);
+    delay(interval/4);
+    beep_total_time = millis();
+    dac_output_enable(DAC_CHANNEL_1);
   }
 }
 
