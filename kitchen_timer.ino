@@ -222,7 +222,8 @@ void updateTime() {
 }
 
 void periodicBeep(uint8_t volume, int hz, int duration, int times, int interval) {
-  if ( millis() - beep_total_time < duration * times * 2 ) {
+  int total_duration = duration*times*2;
+  if ( millis() - beep_total_time < total_duration ) {
     uint32_t b_period = millis() - beep_last_time;
     int halfCycle = 500000 / hz;
     if ( b_period < duration ) {
@@ -235,12 +236,9 @@ void periodicBeep(uint8_t volume, int hz, int duration, int times, int interval)
     } else {
       beep_last_time = millis();
     }
-  } else {
+  } else if(millis() - beep_total_time < total_duration+interval){
     dac_output_disable(DAC_CHANNEL_1);
-    delay(interval/4);
-    delay(interval/4);
-    delay(interval/4);
-    delay(interval/4);
+  } else {
     beep_total_time = millis();
     dac_output_enable(DAC_CHANNEL_1);
   }
