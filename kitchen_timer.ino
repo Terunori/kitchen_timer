@@ -9,6 +9,10 @@
 int mm = 0;
 int ss = 0;
 
+long baseTime;
+long delayTime;
+long setTime;
+
 enum Stats {
   Initialized,
   Moving,
@@ -19,7 +23,6 @@ enum Stats {
 enum Stats stats;
 
 void setup() {
-  // put your setup code here, to run once:
   M5.begin();
   M5.Lcd.setTextFont(2);
   M5.Lcd.fillScreen(TFT_WHITE);
@@ -30,7 +33,6 @@ void setup() {
 void loop() {
   M5.update();
   printTime();
-  // put your main code here, to run repeatedly:
   switch (stats) {
     case Initialized:
       if (M5.BtnA.wasPressed()) {
@@ -38,20 +40,28 @@ void loop() {
         mm++;
       } else if (M5.BtnB.wasPressed()) {
         M5.Lcd.fillRect(0, 0, 320, 180, TFT_WHITE);
-        M5.Lcd.fillScreen(TFT_WHITE);
-        ss++;
+        ss += 10;
       } else if (M5.BtnC.wasPressed()) {
-        moveTimer();
+        if (!(mm == 0 && ss == 0)) {
+          moveTimer();
+        }
       }
       break;
     case Moving:
       if (M5.BtnA.wasPressed()) {
-        M5.Lcd.fillRect(0, 0, 320, 180, TFT_WHITE);
+        M5.Lcd.fillRect(0, 0, 320, 180, TFT_LIGHTGREY);
         mm++;
+        setTime += 60000;
       } else if (M5.BtnB.wasPressed()) {
+        M5.Lcd.fillRect(0, 0, 320, 180, TFT_WHITE);
         initialize();
       } else if (M5.BtnC.wasPressed()) {
         pauseTimer();
+      }
+      delayTime = millis() - baseTime;
+      updateTime();
+      if (delayTime + 1000 > setTime ) {
+        endTimer();
       }
       break;
     case Pause:
@@ -61,16 +71,22 @@ void loop() {
       } else if (M5.BtnB.wasPressed()) {
         initialize();
       } else if (M5.BtnC.wasPressed()) {
-        moveTimer();
+        if (!(mm == 0 && ss == 0)) {
+          moveTimer();
+        }
       }
       break;
     case Ended:
-      if (M5.BtnA.wasPressed()) {
+      if (M5.BtnA.wasPressed()) {      
         initialize();
       } else if (M5.BtnB.wasPressed()) {
         initialize();
       } else if (M5.BtnC.wasPressed()) {
         initialize();
+      } else if (blinkOn()) {
+        M5.Speaker.mute();
+      } else {
+        M5.Speaker.tone(1200,500);
       }
       break;
   }
@@ -86,6 +102,11 @@ void initialize() {
   M5.Lcd.print("S");
   M5.Lcd.setCursor(215, 200);
   M5.Lcd.print("START");
+
+  mm = 0;
+  ss = 0;
+  M5.Speaker.mute();
+
   stats = Initialized;
 }
 
@@ -99,6 +120,10 @@ void moveTimer() {
   M5.Lcd.print("RESET");
   M5.Lcd.setCursor(215, 200);
   M5.Lcd.print("PAUSE");
+
+  baseTime = millis();
+  setTime = mm * 60000 + ss * 1000 + 1000;
+
   stats = Moving;
 }
 
@@ -112,6 +137,7 @@ void pauseTimer() {
   M5.Lcd.print("RESET");
   M5.Lcd.setCursor(210, 200);
   M5.Lcd.print("RESUME");
+
   stats = Pause;
 }
 
@@ -125,23 +151,32 @@ void endTimer() {
   M5.Lcd.print("RESET");
   M5.Lcd.setCursor(230, 200);
   M5.Lcd.print("___");
+
+  mm = 0;
+  ss = 0;
+  baseTime = millis();
+
   stats = Ended;
 }
 
 void printTime() {
-  setMin();
-  setColon();
-  setSec();
+  if (stats == Pause && blinkOn()) {
+    M5.Lcd.fillRect(0, 0, 320, 180, TFT_WHITE);
+  } else {
+    setMin();
+    setColon();
+    setSec();
+  }
 }
 
 void setMin() {
   M5.Lcd.setTextSize(8);
   M5.Lcd.setCursor(30, 55);
   if (mm < 10) {
-    M5.lcd.print("0");
-    M5.lcd.print(mm);
+    M5.Lcd.print("0");
+    M5.Lcd.print(mm);
   } else {
-    M5.lcd.print(mm);
+    M5.Lcd.print(mm);
   }
 }
 
@@ -149,17 +184,34 @@ void setSec() {
   M5.Lcd.setTextSize(8);
   M5.Lcd.setCursor(190, 55);
   if (ss < 10) {
-    M5.lcd.print("0");
-    M5.lcd.print(ss);
+    M5.Lcd.print("0");
+    M5.Lcd.print(ss);
   } else {
-    M5.lcd.print(ss);
+    M5.Lcd.print(ss);
   }
 }
 
 void setColon() {
   M5.Lcd.setTextSize(8);
   M5.Lcd.setCursor(155, 55);
-  if (!(stats == Moving && ss % 2 == 0)) {
-    M5.lcd.print(":");
+  if (!(stats == Moving && blinkOn())) {
+    M5.Lcd.print(":");
   }
+}
+
+void updateTime() {
+  int oss = ss;
+  long remainingTime = setTime - delayTime;
+  if (!(M5.BtnB.isPressed())) {
+    mm = remainingTime / 60000;
+    ss = (remainingTime - mm * 60000) / 1000;
+    if (oss != ss) {
+      M5.Lcd.fillRect(0, 0, 320, 180, TFT_LIGHTGREY);
+    }
+  }
+}
+
+bool blinkOn() {
+  int tmp = millis() - baseTime;
+  return tmp % 1000 < 500;
 }
