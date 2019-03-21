@@ -5,7 +5,7 @@
 */
 
 #include <M5Stack.h>
-#include <driver/dac.h> //Arduino-ESP32 driver
+#include <driver/dac.h>
 
 int mm = 0;
 int ss = 0;
@@ -30,7 +30,7 @@ void setup() {
   M5.begin();
   //これを実行すると、M5Stackスピーカーから破裂音が出る
   dac_output_enable( DAC_CHANNEL_1 ); //DAC channel 1 is GPIO #25
-  M5.Lcd.setTextFont(2);
+  M5.Lcd.setTextFont(4);
   M5.Lcd.fillScreen(TFT_WHITE);
   stats = Initialized;
   initialize();
@@ -102,8 +102,7 @@ void loop() {
 void initialize() {
   M5.Lcd.clear(TFT_WHITE);
   M5.Lcd.setTextColor(TFT_BLACK);
-  M5.Lcd.setTextSize(2);
-  M5.Lcd.setCursor(60, 200);
+  M5.Lcd.setCursor(55, 200);
   M5.Lcd.print("M");
   M5.Lcd.setCursor(150, 200);
   M5.Lcd.print("S");
@@ -120,10 +119,9 @@ void initialize() {
 void moveTimer() {
   M5.Lcd.clear(TFT_LIGHTGREY);
   M5.Lcd.setTextColor(TFT_WHITE);
-  M5.Lcd.setTextSize(2);
-  M5.Lcd.setCursor(45, 200);
+  M5.Lcd.setCursor(40, 200);
   M5.Lcd.print("+1M");
-  M5.Lcd.setCursor(120, 200);
+  M5.Lcd.setCursor(115, 200);
   M5.Lcd.print("RESET");
   M5.Lcd.setCursor(215, 200);
   M5.Lcd.print("PAUSE");
@@ -137,12 +135,11 @@ void moveTimer() {
 void pauseTimer() {
   M5.Lcd.clear(TFT_WHITE);
   M5.Lcd.setTextColor(TFT_BLACK);
-  M5.Lcd.setTextSize(2);
-  M5.Lcd.setCursor(45, 200);
+  M5.Lcd.setCursor(40, 200);
   M5.Lcd.print("+1M");
-  M5.Lcd.setCursor(120, 200);
+  M5.Lcd.setCursor(115, 200);
   M5.Lcd.print("RESET");
-  M5.Lcd.setCursor(210, 200);
+  M5.Lcd.setCursor(205, 200);
   M5.Lcd.print("RESUME");
 
   stats = Pause;
@@ -151,12 +148,11 @@ void pauseTimer() {
 void endTimer() {
   M5.Lcd.clear(TFT_OLIVE);
   M5.Lcd.setTextColor(TFT_WHITE);
-  M5.Lcd.setTextSize(2);
-  M5.Lcd.setCursor(40, 200);
+  M5.Lcd.setCursor(45, 200);
   M5.Lcd.print("___");
-  M5.Lcd.setCursor(120, 200);
+  M5.Lcd.setCursor(115, 200);
   M5.Lcd.print("RESET");
-  M5.Lcd.setCursor(230, 200);
+  M5.Lcd.setCursor(235, 200);
   M5.Lcd.print("___");
 
   mm = 0;
@@ -173,15 +169,16 @@ void printTime() {
   if (stats == Pause && blinkOn()) {
     M5.Lcd.fillRect(0, 0, 320, 180, TFT_WHITE);
   } else {
+    M5.Lcd.setTextFont(8);
     setMin();
     setColon();
     setSec();
+    M5.Lcd.setTextFont(4);
   }
 }
 
 void setMin() {
-  M5.Lcd.setTextSize(8);
-  M5.Lcd.setCursor(30, 55);
+  M5.Lcd.setCursor(30, 65);
   if (mm < 10) {
     M5.Lcd.print("0");
     M5.Lcd.print(mm);
@@ -191,8 +188,7 @@ void setMin() {
 }
 
 void setSec() {
-  M5.Lcd.setTextSize(8);
-  M5.Lcd.setCursor(190, 55);
+  M5.Lcd.setCursor(180, 65);
   if (ss < 10) {
     M5.Lcd.print("0");
     M5.Lcd.print(ss);
@@ -202,8 +198,7 @@ void setSec() {
 }
 
 void setColon() {
-  M5.Lcd.setTextSize(8);
-  M5.Lcd.setCursor(155, 55);
+  M5.Lcd.setCursor(145, 58);
   if (!(stats == Moving && blinkOn())) {
     M5.Lcd.print(":");
   }
@@ -222,7 +217,7 @@ void updateTime() {
 }
 
 void periodicBeep(uint8_t volume, int hz, int duration, int times, int interval) {
-  int total_duration = duration*times*2;
+  int total_duration = duration * times * 2;
   if ( millis() - beep_total_time < total_duration ) {
     uint32_t b_period = millis() - beep_last_time;
     int halfCycle = 500000 / hz;
@@ -236,7 +231,7 @@ void periodicBeep(uint8_t volume, int hz, int duration, int times, int interval)
     } else {
       beep_last_time = millis();
     }
-  } else if(millis() - beep_total_time < total_duration+interval){
+  } else if (millis() - beep_total_time < total_duration + interval) {
     dac_output_disable(DAC_CHANNEL_1);
   } else {
     beep_total_time = millis();
