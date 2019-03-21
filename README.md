@@ -4,8 +4,8 @@ kitchen timer using M5Stack
 
 |||
 ----|----
-|<img src=./img/01_initialized.jpg width=500px>|<img src=./img/02_moving.jpg width=500px>
-<img src=./img/03_pause.jpg width=500px>|<img src=./img/04_ended.jpg width=500px>|
+|<img src=./img/01_Initialized.jpg width=500px>|<img src=./img/02_Moving.jpg width=500px>
+<img src=./img/03_Pause.jpg width=500px>|<img src=./img/04_Ended.jpg width=500px>|
 
 ---
 
