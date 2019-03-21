@@ -37,6 +37,7 @@ void loop() {
     case Initialized:
       if (M5.BtnA.isPressed() && M5.BtnB.isPressed()) {
         initialize();
+        delay(200);
       } else if (M5.BtnA.wasPressed()) {
         M5.Lcd.fillRect(0, 0, 320, 180, TFT_WHITE);
         mm++;
